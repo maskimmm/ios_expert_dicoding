@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22F82" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="PlaceEntityCD" representedClassName="PlaceEntityCD" isAbstract="YES" syncable="YES" codeGenerationType="class">
+        <attribute name="addressEntity" optional="YES" attributeType="String"/>
+        <attribute name="descriptionEntity" optional="YES" attributeType="String"/>
+        <attribute name="idEntity" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="imageEntity" optional="YES" attributeType="String"/>
+        <attribute name="latitudeEntity" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="likeEntity" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="longitudeEntity" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="nameEntity" optional="YES" attributeType="String"/>
+    </entity>
+</model>
