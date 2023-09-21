@@ -6,14 +6,15 @@
 //
 
 import Foundation
+import Combine
 
 protocol PlaceRepositoryProtocol {
     
-    func getPlaces(completion: @escaping (Result<[Place], Error>) -> Void)
+    func getPlaces() -> AnyPublisher<[Place], DatabaseError>
     
-    func getFavoritePlaces(completion: @escaping (Result<[Place], Error>) -> Void)
-    func addFavoritePlace(_ place: Place, completion: @escaping (Result<Bool, Error>) -> Void)
-    func deleteFavoritePlace(_ place: Place, completion: @escaping (Result<Bool, Error>) -> Void)
+    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError>
+    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError>
+    func deleteFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError>
 }
 
 class PlaceRepository: NSObject {
@@ -36,62 +37,40 @@ class PlaceRepository: NSObject {
 
 extension PlaceRepository: PlaceRepositoryProtocol {
     
-    func getPlaces(completion: @escaping (Result<[Place], Error>) -> Void) {
-        local.getPlaces { localResponse in
-            switch localResponse {
-                
-            case .success(let placeEntity):
-                let places = PlaceMapper.mapPlaceEntitiesToDomains(input: placeEntity)
-                if places.isEmpty {
-                  self.remote.getPlaces { remoteResponses in
-                    switch remoteResponses {
-                    case .success(let placeResponses):
-                      let placeEntities = PlaceMapper.mapPlaceResponsesToEntities(input: placeResponses)
-                      self.local.addPlaces(from: placeEntities) { addState in
-                        switch addState {
-                        case .success(let resultFromAdd):
-                          if resultFromAdd {
-                            self.local.getPlaces { localeResponses in
-                              switch localeResponses {
-                              case .success(let placeEntity):
-                                let results = PlaceMapper.mapPlaceEntitiesToDomains(input: placeEntity)
-                                completion(.success(results))
-                              case .failure(let error):
-                                completion(.failure(error))
-                              }
-                            }
-                          }
-                        case .failure(let error):
-                          completion(.failure(error))
+    func getPlaces() -> AnyPublisher<[Place], DatabaseError> {
+        return self.local.getPlaces()
+            .flatMap { result -> AnyPublisher<[Place], DatabaseError> in
+                if result.isEmpty {
+                    return self.remote.getPlaces()
+                        .map { PlaceMapper.mapPlaceResponsesToEntities(input: $0) }
+                        .flatMap { self.local.addPlaces(from: $0) }
+                        .filter { $0 }
+                        .flatMap { _ in self.local.getPlaces()
+                                .map { PlaceMapper.mapPlaceEntitiesToDomains(input: $0)}
                         }
-                      }
-                    case .failure(let error):
-                      completion(.failure(error))
-                    }
-                  }
+                        .eraseToAnyPublisher()
                 } else {
-                  completion(.success(places))
+                    return self.local.getPlaces()
+                        .map { PlaceMapper.mapPlaceEntitiesToDomains(input: $0) }
+                        .eraseToAnyPublisher()
                 }
-            case .failure(let error):
-                completion(.failure(error))
             }
-        }
+            .eraseToAnyPublisher()
     }
     
-    func getFavoritePlaces(completion: @escaping (Result<[Place], Error>) -> Void) {
-        local.getFavPlaces { localResponse in
-            switch localResponse {
-            case .success(let placeEntity):
-                let places = PlaceMapper.mapPlaceEntitiesToDomains(input: placeEntity)
-                completion(.success(places))
-            case .failure(let error):
-                completion(.failure(error))
+    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError> {
+        return self.local.getFavPlaces()
+            .flatMap { result -> AnyPublisher<[Place], DatabaseError> in
+                return self.local.getFavPlaces()
+                    .map { PlaceMapper.mapPlaceEntitiesToDomains(input: $0) }
+                    .eraseToAnyPublisher()
             }
-        }
+            .eraseToAnyPublisher()
     }
     
-    func addFavoritePlace(_ place: Place, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError> {
         let favPlace = FavPlaceEntity()
+        
         favPlace.id = place.id
         favPlace.name = place.name
         favPlace.desc = place.description
@@ -102,37 +81,24 @@ extension PlaceRepository: PlaceRepositoryProtocol {
         favPlace.image = place.image
         favPlace.dateAdded = Date.now
         
-        local.addFavPlace(place: favPlace) { response in
-            switch response {
-            case .success:
-                completion(.success(true))
-            case .failure(let failure):
-                completion(.failure(failure))
-            }
-        }
+        return self.local.addFavPlace(place: favPlace)
+            .eraseToAnyPublisher()
     }
     
-    func deleteFavoritePlace(_ place: Place, completion: @escaping (Result<Bool, Error>) -> Void) {
-        var favPlace = FavPlaceEntity()
+    func deleteFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError> {
+        var places: [FavPlaceEntity] = [FavPlaceEntity]()
         
-        local.getFavPlaces { response in
-            switch response {
-            case .success(let results):
-                if let result = results.first(where: {$0.id == place.id}) {
-                    favPlace = result
-                }
-            case .failure(let failure):
-                completion(.failure(failure))
-            }
-        }
+        self.local.getFavPlaces()
+            .map { places = $0 }
+            .eraseToAnyPublisher()
         
-        local.deleteFavPlace(place: favPlace) { response in
-            switch response {
-            case .success:
-                completion(.success(true))
-            case .failure(let failure):
-                completion(.failure(failure))
-            }
+        if let placeToDelete = places.first(where: {$0.id == place.id}) {
+            return self.local.deleteFavPlace(place: placeToDelete)
+                .eraseToAnyPublisher()
+        } else {
+            return Just(false)
+                .setFailureType(to: DatabaseError.self)
+                .eraseToAnyPublisher()
         }
     }
 }

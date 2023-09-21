@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import Combine
 
 class FavoritePlaceViewModel: ObservableObject {
     
     private let favoritePlaceUseCase: FavoritePlaceUseCaseProtocol
+    private var cancellables: Set<AnyCancellable> = []
     
     @Published var places: [Place] = [Place]()
     @Published var errorMessage: String = ""
@@ -21,19 +23,19 @@ class FavoritePlaceViewModel: ObservableObject {
     
     func getPlaces() {
         isLoadingState = true
-        favoritePlaceUseCase.getFavoritePlaces { result in
-            switch result {
-            case .success(let places):
-                DispatchQueue.main.async {
+        favoritePlaceUseCase.getFavoritePlaces()
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure:
+                    self.errorMessage = String(describing: completion)
+                case .finished:
                     self.isLoadingState = false
-                    self.places = places
                 }
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self.isLoadingState = false
-                    self.errorMessage = error.localizedDescription
-                }
-            }
-        }
+                
+            }, receiveValue: { listOfPlace in
+                self.places = listOfPlace
+            })
+            .store(in: &cancellables)
     }
 }

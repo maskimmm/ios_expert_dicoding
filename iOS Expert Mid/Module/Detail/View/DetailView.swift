@@ -87,6 +87,9 @@ struct DetailView: View {
                 }
             }
         }
+        .onAppear {
+            self.detailVM.checkIsFavorite(self.detailVM.place)
+        }
     }
 }
 

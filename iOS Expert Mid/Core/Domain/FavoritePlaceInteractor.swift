@@ -6,10 +6,11 @@
 //
 
 import Foundation
+import Combine
 
 protocol FavoritePlaceUseCaseProtocol {
     
-    func getFavoritePlaces(completion: @escaping (Result<[Place], Error>) -> Void)
+    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError>
     
 }
 
@@ -21,9 +22,8 @@ class FavoritePlaceInteractor: FavoritePlaceUseCaseProtocol {
         self.repository = repository
     }
     
-    func getFavoritePlaces(completion: @escaping (Result<[Place], Error>) -> Void) {
-        repository.getFavoritePlaces { result in
-            completion(result)
-        }
+    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError> {
+        repository.getFavoritePlaces()
+            .eraseToAnyPublisher()
     }
 }

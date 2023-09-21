@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import Combine
 
 class DiscoverPlaceViewModel: ObservableObject {
     
     private let discoverPlaceUseCase: DiscoverPlaceUseCaseProtocol
+    private var cancellables: Set<AnyCancellable> = []
     
     @Published var places: [Place] = [Place]()
     @Published var errorMessage: String = ""
@@ -21,19 +23,19 @@ class DiscoverPlaceViewModel: ObservableObject {
     
     func getPlaces() {
         isLoadingState = true
-        discoverPlaceUseCase.getPlaces { result in
-            switch result {
-            case .success(let places):
-                DispatchQueue.main.async {
+        discoverPlaceUseCase.getPlaces()
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure:
+                    self.errorMessage = String(describing: completion)
+                case .finished:
                     self.isLoadingState = false
-                    self.places = places
                 }
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self.isLoadingState = false
-                    self.errorMessage = error.localizedDescription
-                }
-            }
-        }
+                
+            }, receiveValue: { listOfPlace in
+                self.places = listOfPlace
+            })
+            .store(in: &cancellables)
     }
 }

@@ -6,10 +6,11 @@
 //
 
 import Foundation
+import Combine
 
 protocol DiscoverPlaceUseCaseProtocol {
     
-    func getPlaces(completion: @escaping (Result<[Place], Error>) -> Void)
+    func getPlaces() -> AnyPublisher<[Place], DatabaseError>
     
 }
 
@@ -21,9 +22,7 @@ class DiscoverPlaceInteractor: DiscoverPlaceUseCaseProtocol {
         self.repository = repository
     }
     
-    func getPlaces(completion: @escaping (Result<[Place], Error>) -> Void) {
-        repository.getPlaces { result in
-            completion(result)
-        }
+    func getPlaces() -> AnyPublisher<[Place], DatabaseError> {
+        return self.repository.getPlaces()
     }
 }
