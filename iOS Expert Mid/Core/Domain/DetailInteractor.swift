@@ -11,10 +11,9 @@ import Combine
 protocol DetailUseCaseProtocol {
     
     func getDetailPlace() -> Place
-    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError>
-//    func checkIsFavorite(_ place: Place) -> Bool
-    func addFavoritePlace(_ place: Place)
-    func deleteFavoritePlace(_ place: Place)
+    func getFavoritePlaces() -> AnyPublisher<[Place], Error>
+    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, Error>
+    func deleteFavoritePlace(_ id: Int) -> AnyPublisher<Bool, Error>
 }
 
 class DetailInteractor: DetailUseCaseProtocol {
@@ -31,9 +30,8 @@ class DetailInteractor: DetailUseCaseProtocol {
         return place
     }
     
-    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError> {
+    func getFavoritePlaces() -> AnyPublisher<[Place], Error> {
         return self.repository.getFavoritePlaces()
-            .eraseToAnyPublisher()
     }
     
 //    func checkIsFavorite(_ place: Place) -> Bool {
@@ -66,13 +64,11 @@ class DetailInteractor: DetailUseCaseProtocol {
 ////            .eraseToAnyPublisher()
 //    }
     
-    func addFavoritePlace(_ place: Place) {
-        self.repository.addFavoritePlace(place)
-            .eraseToAnyPublisher()
+    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, Error> {
+        return self.repository.addFavoritePlace(place)
     }
     
-    func deleteFavoritePlace(_ place: Place) {
-        self.repository.deleteFavoritePlace(place)
-            .eraseToAnyPublisher()
+    func deleteFavoritePlace(_ id: Int) -> AnyPublisher<Bool, Error> {
+        return self.repository.deleteFavoritePlace(id)
     }
 }

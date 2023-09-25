@@ -39,9 +39,7 @@ struct DiscoverPlaceView: View {
         }
 //        .navigationTitle("Discover Place")
         .onAppear {
-            if self.discoverPlaceVM.places.count == 0 {
-                self.discoverPlaceVM.getPlaces()
-            }
+            self.discoverPlaceVM.getPlaces()
         }
     }
 }

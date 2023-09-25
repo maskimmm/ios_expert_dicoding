@@ -10,11 +10,11 @@ import Combine
 
 protocol PlaceRepositoryProtocol {
     
-    func getPlaces() -> AnyPublisher<[Place], DatabaseError>
+    func getPlaces() -> AnyPublisher<[Place], Error>
     
-    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError>
-    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError>
-    func deleteFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError>
+    func getFavoritePlaces() -> AnyPublisher<[Place], Error>
+    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, Error>
+    func deleteFavoritePlace(_ id: Int) -> AnyPublisher<Bool, Error>
 }
 
 class PlaceRepository: NSObject {
@@ -37,9 +37,9 @@ class PlaceRepository: NSObject {
 
 extension PlaceRepository: PlaceRepositoryProtocol {
     
-    func getPlaces() -> AnyPublisher<[Place], DatabaseError> {
+    func getPlaces() -> AnyPublisher<[Place], Error> {
         return self.local.getPlaces()
-            .flatMap { result -> AnyPublisher<[Place], DatabaseError> in
+            .flatMap { result -> AnyPublisher<[Place], Error> in
                 if result.isEmpty {
                     return self.remote.getPlaces()
                         .map { PlaceMapper.mapPlaceResponsesToEntities(input: $0) }
@@ -58,17 +58,13 @@ extension PlaceRepository: PlaceRepositoryProtocol {
             .eraseToAnyPublisher()
     }
     
-    func getFavoritePlaces() -> AnyPublisher<[Place], DatabaseError> {
+    func getFavoritePlaces() -> AnyPublisher<[Place], Error> {
         return self.local.getFavPlaces()
-            .flatMap { result -> AnyPublisher<[Place], DatabaseError> in
-                return self.local.getFavPlaces()
-                    .map { PlaceMapper.mapPlaceEntitiesToDomains(input: $0) }
-                    .eraseToAnyPublisher()
-            }
+            .map { FavPlaceMapper.mapFavPlaceEntitiesToDomains(input: $0) }
             .eraseToAnyPublisher()
     }
     
-    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError> {
+    func addFavoritePlace(_ place: Place) -> AnyPublisher<Bool, Error> {
         let favPlace = FavPlaceEntity()
         
         favPlace.id = place.id
@@ -85,20 +81,8 @@ extension PlaceRepository: PlaceRepositoryProtocol {
             .eraseToAnyPublisher()
     }
     
-    func deleteFavoritePlace(_ place: Place) -> AnyPublisher<Bool, DatabaseError> {
-        var places: [FavPlaceEntity] = [FavPlaceEntity]()
-        
-        self.local.getFavPlaces()
-            .map { places = $0 }
+    func deleteFavoritePlace(_ id: Int) -> AnyPublisher<Bool, Error> {
+        return self.local.deleteFavPlace(id)
             .eraseToAnyPublisher()
-        
-        if let placeToDelete = places.first(where: {$0.id == place.id}) {
-            return self.local.deleteFavPlace(place: placeToDelete)
-                .eraseToAnyPublisher()
-        } else {
-            return Just(false)
-                .setFailureType(to: DatabaseError.self)
-                .eraseToAnyPublisher()
-        }
     }
 }

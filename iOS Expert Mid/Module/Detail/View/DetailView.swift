@@ -81,14 +81,10 @@ struct DetailView: View {
                     } else {
                         detailVM.addFavPlace(detailVM.place)
                     }
-                    detailVM.checkIsFavorite(detailVM.place)
                 } label: {
                     Image(systemName: detailVM.isFavorite ? "bookmark.fill" : "bookmark")
                 }
             }
-        }
-        .onAppear {
-            self.detailVM.checkIsFavorite(self.detailVM.place)
         }
     }
 }

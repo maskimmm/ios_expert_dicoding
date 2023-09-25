@@ -11,7 +11,7 @@ import Combine
 
 protocol RemoteDataSourceProtocol {
     
-    func getPlaces() -> AnyPublisher<[PlaceResponse], DatabaseError>
+    func getPlaces() -> AnyPublisher<[PlaceResponse], Error>
     
 }
 
@@ -24,15 +24,15 @@ final class RemoteDataSource: NSObject {
 
 extension RemoteDataSource: RemoteDataSourceProtocol {
     
-    func getPlaces() -> AnyPublisher<[PlaceResponse], DatabaseError> {
-        return Future<[PlaceResponse], DatabaseError> { completion in
+    func getPlaces() -> AnyPublisher<[PlaceResponse], Error> {
+        return Future<[PlaceResponse], Error> { completion in
             if let url = URL(string: Endpoints.Gets.places.url) {
                 AF.request(url).validate().responseDecodable(of: PlaceAPIResponse.self) { response in
                     switch response.result {
                     case .success(let value):
                         completion(.success(value.places))
                     case .failure:
-                        completion(.failure(.invalidInstance))
+                        completion(.failure(DatabaseError.invalidInstance))
                     }
                     
                 }

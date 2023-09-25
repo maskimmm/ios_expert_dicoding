@@ -11,12 +11,12 @@ import Combine
 
 protocol LocalDataSourceProtocol {
     
-    func getPlaces() -> AnyPublisher<[PlaceEntity], DatabaseError>
-    func addPlaces(from places: [PlaceEntity]) -> AnyPublisher<Bool, DatabaseError>
+    func getPlaces() -> AnyPublisher<[PlaceEntity], Error>
+    func addPlaces(from places: [PlaceEntity]) -> AnyPublisher<Bool, Error>
     
-    func getFavPlaces() -> AnyPublisher<[FavPlaceEntity], DatabaseError>
-    func addFavPlace(place: FavPlaceEntity) -> AnyPublisher<Bool, DatabaseError>
-    func deleteFavPlace(place: FavPlaceEntity) -> AnyPublisher<Bool, DatabaseError>
+    func getFavPlaces() -> AnyPublisher<[FavPlaceEntity], Error>
+    func addFavPlace(place: FavPlaceEntity) -> AnyPublisher<Bool, Error>
+    func deleteFavPlace(_ id: Int) -> AnyPublisher<Bool, Error>
 }
 
 final class LocalDataSource: NSObject {
@@ -35,22 +35,22 @@ final class LocalDataSource: NSObject {
 
 extension LocalDataSource: LocalDataSourceProtocol {
     
-    func getPlaces() -> AnyPublisher<[PlaceEntity], DatabaseError> {
-        return Future<[PlaceEntity], DatabaseError> { completion in
+    func getPlaces() -> AnyPublisher<[PlaceEntity], Error> {
+        return Future<[PlaceEntity], Error> { completion in
             if let realm = self.realm {
                 let placeEntity: Results<PlaceEntity> = {
                     realm.objects(PlaceEntity.self)
                 }()
                 completion(.success(placeEntity.toArray(ofType: PlaceEntity.self)))
             } else {
-                completion(.failure(.invalidInstance))
+                completion(.failure(DatabaseError.invalidInstance))
             }
         }
         .eraseToAnyPublisher()
     }
     
-    func addPlaces(from places: [PlaceEntity]) -> AnyPublisher<Bool, DatabaseError>{
-        return Future<Bool, DatabaseError> { completion in
+    func addPlaces(from places: [PlaceEntity]) -> AnyPublisher<Bool, Error> {
+        return Future<Bool, Error> { completion in
             if let realm = self.realm {
                 do {
                     try realm.write {
@@ -60,31 +60,31 @@ extension LocalDataSource: LocalDataSourceProtocol {
                         completion(.success(true))
                     }
                 } catch {
-                    completion(.failure(.requestFailed))
+                    completion(.failure(DatabaseError.requestFailed))
                 }
             } else {
-                completion(.failure(.invalidInstance))
+                completion(.failure(DatabaseError.invalidInstance))
             }
         }
         .eraseToAnyPublisher()
     }
     
-    func getFavPlaces() -> AnyPublisher<[FavPlaceEntity], DatabaseError> {
-        return Future<[FavPlaceEntity], DatabaseError> { completion in
+    func getFavPlaces() -> AnyPublisher<[FavPlaceEntity], Error> {
+        return Future<[FavPlaceEntity], Error> { completion in
             if let realm = self.realm {
                 let favPlaceEntity: Results<FavPlaceEntity> = {
                     realm.objects(FavPlaceEntity.self)
                 }()
                 completion(.success(favPlaceEntity.toArray(ofType: FavPlaceEntity.self)))
             } else {
-                completion(.failure(.invalidInstance))
+                completion(.failure(DatabaseError.invalidInstance))
             }
         }
         .eraseToAnyPublisher()
     }
     
-    func addFavPlace(place: FavPlaceEntity) -> AnyPublisher<Bool, DatabaseError> {
-        return Future<Bool, DatabaseError> { completion in
+    func addFavPlace(place: FavPlaceEntity) -> AnyPublisher<Bool, Error> {
+        return Future<Bool, Error> { completion in
             if let realm = self.realm {
                 do {
                     try realm.write {
@@ -92,28 +92,32 @@ extension LocalDataSource: LocalDataSourceProtocol {
                         completion(.success(true))
                     }
                 } catch {
-                    completion(.failure(.requestFailed))
+                    completion(.failure(DatabaseError.requestFailed))
                 }
             } else {
-                completion(.failure(.invalidInstance))
+                completion(.failure(DatabaseError.invalidInstance))
             }
         }
         .eraseToAnyPublisher()
     }
     
-    func deleteFavPlace(place: FavPlaceEntity) -> AnyPublisher<Bool, DatabaseError> {
-        return Future<Bool, DatabaseError> { completion in
+    func deleteFavPlace(_ id: Int) -> AnyPublisher<Bool, Error> {
+        return Future<Bool, Error> { completion in
             if let realm = self.realm {
-                do {
-                    try realm.write {
-                        realm.delete(place)
-                        completion(.success(true))
+                if let placeToDelete = realm.objects(FavPlaceEntity.self).first(where: {$0.id == id}) {
+                    do {
+                        try realm.write {
+                            realm.delete(placeToDelete)
+                            completion(.success(true))
+                        }
+                    } catch {
+                        completion(.failure(DatabaseError.requestFailed))
                     }
-                } catch {
-                    completion(.failure(.requestFailed))
+                } else {
+                    completion(.failure(DatabaseError.invalidInstance))
                 }
             } else {
-                completion(.failure(.invalidInstance))
+                completion(.failure(DatabaseError.invalidInstance))
             }
         }
         .eraseToAnyPublisher()

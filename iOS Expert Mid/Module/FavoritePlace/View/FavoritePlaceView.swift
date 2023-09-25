@@ -38,7 +38,6 @@ struct FavoritePlaceView: View {
                 }
             }
         }
-//        .navigationTitle("Favorite Place")
         .onAppear {
             self.favoritePlaceVM.getPlaces()
         }

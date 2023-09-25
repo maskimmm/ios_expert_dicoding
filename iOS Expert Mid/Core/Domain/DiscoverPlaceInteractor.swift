@@ -10,7 +10,7 @@ import Combine
 
 protocol DiscoverPlaceUseCaseProtocol {
     
-    func getPlaces() -> AnyPublisher<[Place], DatabaseError>
+    func getPlaces() -> AnyPublisher<[Place], Error>
     
 }
 
@@ -22,7 +22,7 @@ class DiscoverPlaceInteractor: DiscoverPlaceUseCaseProtocol {
         self.repository = repository
     }
     
-    func getPlaces() -> AnyPublisher<[Place], DatabaseError> {
+    func getPlaces() -> AnyPublisher<[Place], Error> {
         return self.repository.getPlaces()
     }
 }

@@ -22,18 +22,6 @@ class DetailViewModel: ObservableObject {
         self.detailUseCase = detailUseCase
         place = detailUseCase.getDetailPlace()
         checkIsFavorite(place)
-            .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .failure:
-                    self.errorMessage = String(describing: completion)
-                case .finished:
-                    self.isLoadingState = false
-                }
-                
-            }, receiveValue: { _ in
-            })
-            .store(in: &cancellables)
     }
     
     func getUIImageFromString(_ imgUrl: String, completion: @escaping (UIImage?) -> Void) {
@@ -55,23 +43,64 @@ class DetailViewModel: ObservableObject {
     
     func addFavPlace(_ place: Place) {
         detailUseCase.addFavoritePlace(place)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure:
+                    self.errorMessage = String(describing: completion)
+                case .finished:
+                    self.errorMessage = ""
+                }
+            }, receiveValue: { value in
+                if value {
+                    print("\(place.name) added to favorite")
+                    self.isFavorite = true
+                } else {
+                    print("error add \(place.name) to favorite")
+                }
+            })
+            .store(in: &cancellables)
     }
     
     func deleteFavPlace(_ place: Place) {
-        detailUseCase.deleteFavoritePlace(place)
+        detailUseCase.deleteFavoritePlace(place.id)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure:
+                    self.errorMessage = String(describing: completion)
+                case .finished:
+                    self.errorMessage = ""
+                }
+            }, receiveValue: { value in
+                if value {
+                    print("\(place.name) deleted from favorite")
+                    self.isFavorite = false
+                } else {
+                    print("error delete \(place.name) from favorite")
+                }
+            })
+            .store(in: &cancellables)
     }
     
-    func checkIsFavorite(_ place: Place) -> AnyPublisher<Bool, DatabaseError> {
-        return detailUseCase.getFavoritePlaces()
-            .tryMap { results in
-                if let result = results.first(where: {$0.id == place.id}) {
-                    self.isFavorite = true
+    func checkIsFavorite(_ place: Place) {
+        detailUseCase.getFavoritePlaces()
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure:
+                    self.errorMessage = String(describing: completion)
+                case .finished:
+                    self.isLoadingState = false
                 }
-                return true
-            }
-            .mapError { _ in
-                return DatabaseError.requestFailed
-            }
-            .eraseToAnyPublisher()
+                
+            }, receiveValue: { value in
+                if value.first(where: {$0.id == self.place.id}) != nil {
+                    self.isFavorite = true
+                } else {
+                    self.isFavorite = false
+                }
+            })
+            .store(in: &cancellables)
     }
 }

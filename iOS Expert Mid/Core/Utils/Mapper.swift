@@ -57,3 +57,23 @@ final class PlaceMapper {
         }
     }
 }
+
+final class FavPlaceMapper {
+    
+    static func mapFavPlaceEntitiesToDomains(
+        input placeEntities: [FavPlaceEntity]
+    ) -> [Place] {
+        return placeEntities.map { result in
+            return Place(
+                id: result.id,
+                         name: result.name,
+                         description: result.desc,
+                address: result.address,
+                longitude: result.longitude,
+                latitude: result.latitude,
+                like: result.like,
+                image: result.image)
+        }
+    }
+    
+}
