@@ -21,6 +21,7 @@
 		AA1257442ABAAFE40036818F /* FavoritePlaceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1257432ABAAFE40036818F /* FavoritePlaceViewModel.swift */; };
 		AA1257462ABAB00D0036818F /* FavoritePlaceInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1257452ABAB00D0036818F /* FavoritePlaceInteractor.swift */; };
 		AA1257482ABAB0700036818F /* FavoritePlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1257472ABAB0700036818F /* FavoritePlaceView.swift */; };
+		AA4957CC2AC1498500E6DD76 /* codemagic.yaml in Resources */ = {isa = PBXBuildFile; fileRef = AA4957CB2AC1498500E6DD76 /* codemagic.yaml */; };
 		AA92018A2AB4A11800A9DDED /* iOS_Expert_MidApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9201892AB4A11800A9DDED /* iOS_Expert_MidApp.swift */; };
 		AA92018C2AB4A11800A9DDED /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA92018B2AB4A11800A9DDED /* ContentView.swift */; };
 		AA92018E2AB4A11800A9DDED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA92018D2AB4A11800A9DDED /* Assets.xcassets */; };
@@ -52,6 +53,7 @@
 		AA1257432ABAAFE40036818F /* FavoritePlaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritePlaceViewModel.swift; sourceTree = "<group>"; };
 		AA1257452ABAB00D0036818F /* FavoritePlaceInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritePlaceInteractor.swift; sourceTree = "<group>"; };
 		AA1257472ABAB0700036818F /* FavoritePlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritePlaceView.swift; sourceTree = "<group>"; };
+		AA4957CB2AC1498500E6DD76 /* codemagic.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = codemagic.yaml; sourceTree = "<group>"; };
 		AA9201862AB4A11800A9DDED /* iOS Expert Mid.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS Expert Mid.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA9201892AB4A11800A9DDED /* iOS_Expert_MidApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS_Expert_MidApp.swift; sourceTree = "<group>"; };
 		AA92018B2AB4A11800A9DDED /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 		AA92017D2AB4A11700A9DDED = {
 			isa = PBXGroup;
 			children = (
+				AA4957CB2AC1498500E6DD76 /* codemagic.yaml */,
 				AA9201882AB4A11800A9DDED /* iOS Expert Mid */,
 				AA9201872AB4A11800A9DDED /* Products */,
 			);
@@ -389,6 +392,7 @@
 				AA1257152AB828A20036818F /* .swiftlint.yml in Resources */,
 				AA9201912AB4A11800A9DDED /* Preview Assets.xcassets in Resources */,
 				AA92018E2AB4A11800A9DDED /* Assets.xcassets in Resources */,
+				AA4957CC2AC1498500E6DD76 /* codemagic.yaml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
